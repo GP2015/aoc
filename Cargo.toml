@@ -1,10 +1,10 @@
-[package]
-name = "advent_of_code_2016"
-version = "0.1.0"
+[workspace]
+resolver = "3"
+members = ["y15"]
+
+[workspace.package]
 edition = "2024"
 
-[dependencies]
-clap = { version = "4.5.53", features = ["derive"] }
-md5 = "0.8.0"
-strum = "0.27.2"
-strum_macros = "0.27.2"
+[profile.release]
+lto = "fat"
+codegen-units = 1

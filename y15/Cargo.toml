@@ -1,0 +1,4 @@
+[package]
+name = "y15"
+version = "0.1.0"
+edition.workspace = true
