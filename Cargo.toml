@@ -6,5 +6,18 @@ members = ["y15"]
 edition = "2024"
 
 [profile.release]
-lto = "fat"
 codegen-units = 1
+lto = "fat"
+panic = "abort"
+debug = true
+
+[workspace.dependencies]
+arrayvec = "0.7.8"
+atoi = "3.1.0"
+itertools = "0.15.0"
+itoa = "1.0.18"
+md-5 = "0.11.0"
+mimalloc = "0.1.52"
+num-traits = "0.2.19"
+rayon = "1.12.0"
+rustc-hash = "2.1.3"

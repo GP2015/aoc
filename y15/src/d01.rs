@@ -1,36 +1,27 @@
-use crate::IsDay;
-use std::io::{Read, StdinLock};
+use crate::common::{ArrayVecConvert, IsDay, MAX_OUTPUT_LEN};
+use arrayvec::ArrayVec;
 
 pub struct Day;
 
 impl IsDay for Day {
-    fn part_a(stdin_handle: StdinLock) {
-        let floor = stdin_handle
-            .bytes()
-            .map(Result::unwrap)
-            .fold(0, |acc, b| match b {
-                b'(' => acc + 1,
-                b')' => acc - 1,
-                _ => unreachable!(),
-            });
+    fn run(input: &[u8]) -> [ArrayVec<u8, MAX_OUTPUT_LEN>; 2] {
+        let mut iter = input.iter().map(|&b| match b {
+            b'(' => 1,
+            _ => -1, // b')'
+        });
 
-        println!("{floor}");
-    }
-
-    fn part_b(stdin_handle: StdinLock) {
         let mut floor = 0;
 
-        for (pos, instr) in stdin_handle.bytes().map(Result::unwrap).enumerate() {
-            match instr {
-                b'(' => floor += 1,
-                b')' => floor -= 1,
-                _ => unreachable!(),
-            }
+        let pos = iter
+            .position(|instr| {
+                floor += instr;
+                floor < 0
+            })
+            .unwrap()
+            + 1;
 
-            if floor < 0 {
-                println!("{}", pos + 1);
-                return;
-            }
-        }
+        floor += iter.sum::<i32>();
+
+        [ArrayVec::from_int(floor), ArrayVec::from_int(pos)]
     }
 }
