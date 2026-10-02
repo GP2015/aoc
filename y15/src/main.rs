@@ -1,7 +1,7 @@
 #![no_std]
-#![warn(clippy::pedantic, clippy::nursery)]
+#![warn(clippy::pedantic, clippy::nursery, clippy::indexing_slicing)]
 
-const HIGHEST_DAY: u8 = 5;
+const HIGHEST_DAY: u8 = 6;
 
 macro_rules! days {
     ($callback:ident) => {
@@ -11,6 +11,7 @@ macro_rules! days {
             d03,
             d04,
             d05,
+            d06,
         }
     };
 }
@@ -42,33 +43,19 @@ macro_rules! day_runs {
     };
 }
 
-const DAYS: &[fn(&RunInput) -> RunOutput] = &days!(day_runs);
+const DAYS: [fn(&RunInput) -> RunOutput; HIGHEST_DAY as usize] = days!(day_runs);
 
-fn input(data_dir: &str, day_num: u8) -> Vec<u8> {
+fn input(data_dir: &str, day_num: usize) -> Vec<u8> {
     let name = format!("{day_num:02}.txt");
     let path = Path::new(&data_dir).join("input").join(name);
-
-    let mut input = fs::read(path).unwrap();
-
-    if *input.last().unwrap() == b'\n' {
-        _ = input.pop();
-    }
-
-    input
+    fs::read(path).unwrap()
 }
 
-fn answers(data_dir: &str, day_num: u8) -> [Vec<u8>; 2] {
+fn answers(data_dir: &str, day_num: usize) -> [Vec<u8>; 2] {
     ['a', 'b'].map(|part| {
         let name = format!("{day_num:02}{part}.txt");
         let path = Path::new(&data_dir).join("output").join(name);
-
-        let mut ans = fs::read(path).unwrap();
-
-        if *ans.last().unwrap() == b'\n' {
-            _ = ans.pop();
-        }
-
-        ans
+        fs::read(path).unwrap()
     })
 }
 
@@ -77,23 +64,25 @@ fn main() {
 
     let mut total = Duration::default();
 
-    for day_index in 0..HIGHEST_DAY {
-        let day = day_index + 1;
-        let input = input(&data_dir, day);
+    for _ in 0..1 {
+        for (day_index, day_fn) in DAYS.iter().enumerate() {
+            let day = day_index + 1;
+            let input = input(&data_dir, day);
 
-        let timer = SystemTime::now();
-        let output_raw = DAYS[day_index as usize](&input);
-        let elapsed = timer.elapsed().unwrap();
-        total += elapsed;
+            let timer = SystemTime::now();
+            let output_raw = day_fn(&input);
+            let elapsed = timer.elapsed().unwrap();
+            total += elapsed;
 
-        let answers_raw = answers(&data_dir, day);
+            let answers_raw = answers(&data_dir, day);
 
-        let output = output_raw.map(|o| str::from_utf8(o.as_slice()).unwrap().to_owned());
-        let answers = answers_raw.map(|o| str::from_utf8(o.as_slice()).unwrap().to_owned());
+            let output = output_raw.map(|o| str::from_utf8(o.as_slice()).unwrap().to_owned());
+            let answers = answers_raw.map(|o| str::from_utf8(o.as_slice()).unwrap().to_owned());
 
-        assert_eq!(output, answers);
+            assert_eq!(output, answers);
 
-        println!("Day {day} - {elapsed:?} - {answers:?}");
+            println!("Day {day} - {elapsed:?} - {answers:?}");
+        }
     }
 
     println!("Total - {total:?}");

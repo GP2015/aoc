@@ -1,12 +1,18 @@
 use crate::common::{ArrayVecConvert, IsDay, MAX_OUTPUT_LEN};
 use arrayvec::ArrayVec;
-use core::sync::atomic::{AtomicU32, Ordering};
+use core::{
+    hint,
+    sync::atomic::{AtomicU32, Ordering},
+};
 use itoa::Buffer;
 use md5::{Digest, Md5};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
+const B_CHECK_FREQ: u32 = 1 << 6;
+
 fn core_search(k: u32, num_cores: u32, stem_hasher: &Md5, a: &AtomicU32, b: &AtomicU32) {
     let mut num = k;
+    let k_mod = k % B_CHECK_FREQ;
 
     loop {
         let mut num_buf = Buffer::new();
@@ -14,9 +20,13 @@ fn core_search(k: u32, num_cores: u32, stem_hasher: &Md5, a: &AtomicU32, b: &Ato
 
         let mut hasher = stem_hasher.clone();
         hasher.update(num_str);
-        let hash = hasher.finalize();
+
+        #[allow(clippy::indexing_slicing)]
+        let hash: [u8; 3] = hasher.finalize()[..3].try_into().unwrap();
 
         if hash[0] == 0 && hash[1] == 0 {
+            hint::cold_path();
+
             if hash[2] == 0 {
                 b.fetch_min(num, Ordering::Relaxed);
                 return;
@@ -27,7 +37,8 @@ fn core_search(k: u32, num_cores: u32, stem_hasher: &Md5, a: &AtomicU32, b: &Ato
 
         num += num_cores;
 
-        if num % 64 == k && num >= b.load(Ordering::Relaxed) {
+        if num % B_CHECK_FREQ == k_mod && num >= b.load(Ordering::Relaxed) {
+            hint::cold_path();
             return;
         }
     }

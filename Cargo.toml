@@ -9,7 +9,6 @@ edition = "2024"
 codegen-units = 1
 lto = "fat"
 panic = "abort"
-debug = true
 
 [workspace.dependencies]
 arrayvec = "0.7.8"

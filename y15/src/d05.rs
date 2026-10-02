@@ -1,8 +1,9 @@
 use crate::common::{ArrayVecConvert, IsDay, MAX_OUTPUT_LEN};
 use arrayvec::ArrayVec;
-use core::array;
 
-fn has_three_vowels(line: &[u8]) -> bool {
+// Make single functions
+
+fn has_three_vowels(line: &[u8; 16]) -> bool {
     let mut vowels = 0;
 
     for &byte in line {
@@ -20,12 +21,12 @@ fn has_three_vowels(line: &[u8]) -> bool {
     false
 }
 
-fn has_pair(line: &[u8]) -> bool {
-    line.windows(2).any(|b| b[0] == b[1])
+fn has_pair(line: &[u8; 16]) -> bool {
+    line.array_windows::<2>().any(|b| b[0] == b[1])
 }
 
-fn no_banned_pats(line: &[u8]) -> bool {
-    !line.windows(2).any(|window| {
+fn no_banned_pats(line: &[u8; 16]) -> bool {
+    !line.array_windows::<2>().any(|window| {
         matches!(
             window,
             [b'a', b'b'] | [b'c', b'd'] | [b'p', b'q'] | [b'x', b'y']
@@ -33,19 +34,22 @@ fn no_banned_pats(line: &[u8]) -> bool {
     })
 }
 
-fn has_pat_dupe(line: &[u8]) -> bool {
+fn has_pat_dupe(line: &[u8; 16]) -> bool {
     let mut seen = [false; 26 * 26];
     let mut last_idx = usize::MAX;
     let mut check_last_idx = true;
 
-    for b in line.windows(2) {
+    for b in line.array_windows::<2>() {
         let idx = (b[0] - b'a') as usize * 26 + (b[1] - b'a') as usize;
 
-        if (!check_last_idx || idx != last_idx) && seen[idx] {
+        #[allow(clippy::indexing_slicing)]
+        let seen_idx = &mut seen[idx];
+
+        if (!check_last_idx || idx != last_idx) && *seen_idx {
             return true;
         }
 
-        seen[idx] = true;
+        *seen_idx = true;
         check_last_idx = idx != last_idx;
         last_idx = idx;
     }
@@ -53,23 +57,25 @@ fn has_pat_dupe(line: &[u8]) -> bool {
     false
 }
 
-fn has_tri_pat(line: &[u8]) -> bool {
-    line.windows(3).any(|b| b[0] == b[2])
+fn has_tri_pat(line: &[u8; 16]) -> bool {
+    line.array_windows::<3>().any(|b| b[0] == b[2])
 }
 
 pub struct Day;
 
 impl IsDay for Day {
     fn run(input: &[u8]) -> [ArrayVec<u8, MAX_OUTPUT_LEN>; 2] {
-        input
-            .chunks(17)
-            .map(|line_raw| {
-                let line = &line_raw[0..16];
+        let (chunks, _) = input.as_chunks::<17>();
+
+        chunks
+            .iter()
+            .map(|chunk| {
+                let line: &[u8; 16] = chunk[..16].try_into().unwrap();
                 let a = has_pair(line) && no_banned_pats(line) && has_three_vowels(line);
                 let b = has_tri_pat(line) && has_pat_dupe(line);
                 [u32::from(a), u32::from(b)]
             })
-            .fold([0, 0], |acc, e| array::from_fn(|i| acc[i] + e[i]))
+            .fold([0, 0], |acc, e| [acc[0] + e[0], acc[1] + e[1]])
             .map(ArrayVec::from_int)
     }
 }

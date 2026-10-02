@@ -12,7 +12,6 @@ pub trait IsDay {
 
 pub trait ArrayVecConvert {
     fn from_int(num: impl Integer) -> Self;
-    // fn from_ascii(bytes: &[u8]) -> Self;
 }
 
 impl<const SIZE: usize> ArrayVecConvert for ArrayVec<u8, SIZE> {
@@ -23,10 +22,4 @@ impl<const SIZE: usize> ArrayVecConvert for ArrayVec<u8, SIZE> {
         arr.try_extend_from_slice(bytes).unwrap();
         arr
     }
-
-    // fn from_ascii(bytes: &[u8]) -> Self {
-    //     let mut arr = Self::new();
-    //     arr.try_extend_from_slice(bytes).unwrap();
-    //     arr
-    // }
 }
