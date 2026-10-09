@@ -1,8 +1,6 @@
 use crate::common::{ArrayVecConvert, IsDay, MAX_OUTPUT_LEN};
 use arrayvec::ArrayVec;
 
-// Make single functions
-
 fn has_three_vowels(line: &[u8; 16]) -> bool {
     let mut vowels = 0;
 

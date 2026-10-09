@@ -10,7 +10,7 @@ impl IsDay for Day {
             .iter()
             .map(|&b| hint::select_unpredictable(b == b'(', 1, -1));
 
-        let mut floor: i32 = 0;
+        let mut floor = 0;
         let mut pos = 0;
 
         loop {

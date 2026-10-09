@@ -60,7 +60,7 @@ impl IsDay for Day {
             core_search(k, num_cores, &stem_hasher, &a, &b);
         });
 
-        [a, b].map(|sem| {
+        [&a, &b].map(|sem| {
             let v = sem.load(Ordering::Relaxed);
             ArrayVec::from_int(v)
         })

@@ -1,8 +1,7 @@
 use crate::common::{ArrayVecConvert, IsDay, MAX_OUTPUT_LEN};
-use alloc::{vec, vec::Vec};
+use alloc::vec;
 use arrayvec::ArrayVec;
-use itertools::Itertools;
-use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
+use core::ops::Range;
 
 #[derive(Clone, Copy, Debug)]
 enum InstrStem {
@@ -28,63 +27,44 @@ fn read_number(input_idx: &mut usize, input: &[u8]) -> u16 {
         *input_idx += 1;
     }
 
-    *input_idx += 2;
+    *input_idx += 1;
 
     num
 }
 
-fn read_line(input_idx: &mut usize, input: &[u8]) {
-    let (stem, inc) = if input[*input_idx + 1] == b'o' {
+fn read_line(input_idx: &mut usize, input: &[u8]) -> Instruction {
+    let (instr_type, inc) = if input[*input_idx + 1] == b'o' {
         (InstrStem::Toggle, 7)
     } else if input[*input_idx + 6] == b'n' {
         (InstrStem::TurnOn, 8)
     } else {
-        (InstrStem::Toggle, 9)
+        (InstrStem::TurnOff, 9)
     };
 
     *input_idx += inc;
 
     let x_from = read_number(input_idx, input);
+    *input_idx += 1;
     let y_from = read_number(input_idx, input);
+
+    *input_idx += 9;
+
+    let x_to = read_number(input_idx, input);
+    *input_idx += 1;
+    let y_to = read_number(input_idx, input);
+    *input_idx += 1;
+
+    Instruction {
+        instr_type,
+        x_range: x_from as usize..x_to as usize + 1,
+        y_range: y_from as usize..y_to as usize + 1,
+    }
 }
 
 struct Instruction {
     instr_type: InstrStem,
-    node_from: [u16; 2],
-    node_to: [u16; 2],
-}
-
-impl From<&[u8]> for Instruction {
-    fn from(raw: &[u8]) -> Self {
-        let words: Vec<_> = raw.split(|&c| c == b' ').collect();
-
-        let node = |s: &[u8]| {
-            s.split(|&c| c == b',')
-                .map(|s| {
-                    let mut num = 0;
-                    for &byte in s {
-                        num *= 10;
-                        num += u16::from(byte - b'0');
-                    }
-                    num
-                })
-                .next_array()
-                .unwrap()
-        };
-
-        Self {
-            instr_type: if words.len() == 4 {
-                InstrStem::Toggle
-            } else if words[1].len() == 2 {
-                InstrStem::TurnOn
-            } else {
-                InstrStem::TurnOff
-            },
-
-            node_from: node(words[words.len() - 3]),
-            node_to: node(words[words.len() - 1]),
-        }
-    }
+    x_range: Range<usize>,
+    y_range: Range<usize>,
 }
 
 #[derive(Clone, Copy, Debug, Default)]
@@ -99,12 +79,14 @@ impl IsDay for Day {
     fn run(input: &[u8]) -> [ArrayVec<u8, MAX_OUTPUT_LEN>; 2] {
         let mut grid = vec![[Light::default(); 1000]; 1000].into_boxed_slice();
 
-        for instr in input.split(|&c| c == b'\n').map(Instruction::from) {
-            let range = |i| instr.node_from[i] as usize..instr.node_to[i] as usize + 1;
+        let mut input_idx = 0;
 
-            grid[range(0)]
-                .par_iter_mut()
-                .flat_map(|row| row[range(1)].par_iter_mut())
+        while input_idx < input.len() {
+            let instr = read_line(&mut input_idx, input);
+
+            grid[instr.x_range]
+                .iter_mut()
+                .flat_map(|row| row[instr.y_range.clone()].iter_mut())
                 .for_each(|light| match instr.instr_type {
                     InstrStem::TurnOn => {
                         light.dig = true;

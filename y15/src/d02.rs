@@ -1,10 +1,7 @@
-use crate::{
-    IsDay,
-    common::{ArrayVecConvert, MAX_OUTPUT_LEN},
-};
+use crate::common::{ArrayVecConvert, IsDay, MAX_OUTPUT_LEN};
 use arrayvec::ArrayVec;
 
-fn parse_line(input_idx: &mut usize, input: &[u8]) -> [u32; 3] {
+fn next_dims(input_idx: &mut usize, input: &[u8]) -> [u32; 3] {
     let mut dims = [0; 3];
 
     for dim in &mut dims {
@@ -42,7 +39,7 @@ impl IsDay for Day {
         let mut input_idx = 0;
 
         while input_idx < input.len() {
-            let dims = parse_line(&mut input_idx, input);
+            let dims = next_dims(&mut input_idx, input);
             a += 3 * dims[0] * dims[1] + 2 * dims[2] * (dims[0] + dims[1]);
             b += 2 * (dims[0] + dims[1]) + (dims[0] * dims[1] * dims[2]);
         }

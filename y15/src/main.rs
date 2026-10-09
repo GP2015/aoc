@@ -64,25 +64,23 @@ fn main() {
 
     let mut total = Duration::default();
 
-    for _ in 0..1 {
-        for (day_index, day_fn) in DAYS.iter().enumerate() {
-            let day = day_index + 1;
-            let input = input(&data_dir, day);
+    for (day_index, day_fn) in DAYS.iter().enumerate() {
+        let day = day_index + 1;
+        let input = input(&data_dir, day);
 
-            let timer = SystemTime::now();
-            let output_raw = day_fn(&input);
-            let elapsed = timer.elapsed().unwrap();
-            total += elapsed;
+        let timer = SystemTime::now();
+        let output_raw = day_fn(&input);
+        let elapsed = timer.elapsed().unwrap();
+        total += elapsed;
 
-            let answers_raw = answers(&data_dir, day);
+        let answers_raw = answers(&data_dir, day);
 
-            let output = output_raw.map(|o| str::from_utf8(o.as_slice()).unwrap().to_owned());
-            let answers = answers_raw.map(|o| str::from_utf8(o.as_slice()).unwrap().to_owned());
+        let output = output_raw.map(|o| str::from_utf8(o.as_slice()).unwrap().to_owned());
+        let answers = answers_raw.map(|o| str::from_utf8(o.as_slice()).unwrap().to_owned());
 
-            assert_eq!(output, answers);
+        assert_eq!(output, answers);
 
-            println!("Day {day} - {elapsed:?} - {answers:?}");
-        }
+        println!("Day {day} - {elapsed:?} - {answers:?}");
     }
 
     println!("Total - {total:?}");
