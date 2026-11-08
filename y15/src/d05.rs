@@ -1,5 +1,5 @@
-use crate::common::{ArrayVecConvert, IsDay, MAX_OUTPUT_LEN};
-use arrayvec::ArrayVec;
+use crate::common::PartAnswer;
+use std::iter;
 
 fn has_three_vowels(line: &[u8; 16]) -> bool {
     let mut vowels = 0;
@@ -59,21 +59,18 @@ fn has_tri_pat(line: &[u8; 16]) -> bool {
     line.array_windows::<3>().any(|b| b[0] == b[2])
 }
 
-pub struct Day;
+pub fn run(input: &[u8]) -> [PartAnswer; 2] {
+    let (chunks, end_chunk) = input.as_chunks::<17>();
 
-impl IsDay for Day {
-    fn run(input: &[u8]) -> [ArrayVec<u8, MAX_OUTPUT_LEN>; 2] {
-        let (chunks, _) = input.as_chunks::<17>();
-
-        chunks
-            .iter()
-            .map(|chunk| {
-                let line: &[u8; 16] = chunk[..16].try_into().unwrap();
-                let a = has_pair(line) && no_banned_pats(line) && has_three_vowels(line);
-                let b = has_tri_pat(line) && has_pat_dupe(line);
-                [u32::from(a), u32::from(b)]
-            })
-            .fold([0, 0], |acc, e| [acc[0] + e[0], acc[1] + e[1]])
-            .map(ArrayVec::from_int)
-    }
+    chunks
+        .iter()
+        .map(|chunk| chunk[..16].try_into().unwrap())
+        .chain(iter::once(end_chunk.try_into().unwrap()))
+        .map(|line| {
+            let a = has_pair(line) && no_banned_pats(line) && has_three_vowels(line);
+            let b = has_tri_pat(line) && has_pat_dupe(line);
+            [u32::from(a), u32::from(b)]
+        })
+        .fold([0, 0], |acc, e| [acc[0] + e[0], acc[1] + e[1]])
+        .map(Into::into)
 }

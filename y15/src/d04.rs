@@ -1,5 +1,4 @@
-use crate::common::{ArrayVecConvert, IsDay, MAX_OUTPUT_LEN};
-use arrayvec::ArrayVec;
+use crate::common::PartAnswer;
 use core::{
     hint,
     sync::atomic::{AtomicU32, Ordering},
@@ -44,25 +43,18 @@ fn core_search(k: u32, num_cores: u32, stem_hasher: &Md5, a: &AtomicU32, b: &Ato
     }
 }
 
-pub struct Day;
+pub fn run(input: &[u8]) -> [PartAnswer; 2] {
+    let stem_hasher = Md5::new_with_prefix(input);
 
-impl IsDay for Day {
-    fn run(input: &[u8]) -> [ArrayVec<u8, MAX_OUTPUT_LEN>; 2] {
-        let stem_hasher = Md5::new_with_prefix(input);
+    let a = AtomicU32::new(u32::MAX);
+    let b = AtomicU32::new(u32::MAX);
 
-        let a = AtomicU32::new(u32::MAX);
-        let b = AtomicU32::new(u32::MAX);
+    #[allow(clippy::cast_possible_truncation)]
+    let num_cores = rayon::current_num_threads() as u32;
 
-        #[allow(clippy::cast_possible_truncation)]
-        let num_cores = rayon::current_num_threads() as u32;
+    (0..num_cores).into_par_iter().for_each(|k| {
+        core_search(k, num_cores, &stem_hasher, &a, &b);
+    });
 
-        (0..num_cores).into_par_iter().for_each(|k| {
-            core_search(k, num_cores, &stem_hasher, &a, &b);
-        });
-
-        [&a, &b].map(|sem| {
-            let v = sem.load(Ordering::Relaxed);
-            ArrayVec::from_int(v)
-        })
-    }
+    [a, b].map(|sem| sem.load(Ordering::Relaxed).into())
 }

@@ -1,5 +1,4 @@
-use crate::common::{ArrayVecConvert, IsDay, MAX_OUTPUT_LEN};
-use arrayvec::ArrayVec;
+use crate::common::PartAnswer;
 use core::array;
 use rustc_hash::{FxBuildHasher, FxHashSet};
 
@@ -16,30 +15,26 @@ fn step(set: &mut FxHashSet<u32>, pos: &mut u32, c: u8) {
     set.insert(*pos);
 }
 
-pub struct Day;
+pub fn run(input: &[u8]) -> [PartAnswer; 2] {
+    let (chunks, _) = input.as_chunks::<2>();
 
-impl IsDay for Day {
-    fn run(input: &[u8]) -> [ArrayVec<u8, MAX_OUTPUT_LEN>; 2] {
-        let (chunks, _) = input.as_chunks::<2>();
+    let def_hash_set = || FxHashSet::with_capacity_and_hasher(input.len() + 1, FxBuildHasher);
+    let [mut solo_set, mut dual_set] = array::from_fn(|_| def_hash_set());
 
-        let def_hash_set = || FxHashSet::with_capacity_and_hasher(input.len() + 1, FxBuildHasher);
-        let [mut solo_set, mut dual_set] = array::from_fn(|_| def_hash_set());
-
-        for set in [&mut solo_set, &mut dual_set] {
-            set.insert(START_POS);
-        }
-
-        let [mut solo_pos, mut dual_pos_real, mut dual_pos_robo] = [START_POS; _];
-
-        for chunk in chunks {
-            for &instr in chunk {
-                step(&mut solo_set, &mut solo_pos, instr);
-            }
-
-            step(&mut dual_set, &mut dual_pos_real, chunk[0]);
-            step(&mut dual_set, &mut dual_pos_robo, chunk[1]);
-        }
-
-        [&solo_set, &dual_set].map(|set| ArrayVec::from_int(set.len()))
+    for set in [&mut solo_set, &mut dual_set] {
+        set.insert(START_POS);
     }
+
+    let [mut solo_pos, mut dual_pos_real, mut dual_pos_robo] = [START_POS; _];
+
+    for chunk in chunks {
+        for &instr in chunk {
+            step(&mut solo_set, &mut solo_pos, instr);
+        }
+
+        step(&mut dual_set, &mut dual_pos_real, chunk[0]);
+        step(&mut dual_set, &mut dual_pos_robo, chunk[1]);
+    }
+
+    [solo_set.len().into(), dual_set.len().into()]
 }

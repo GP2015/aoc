@@ -1,7 +1,7 @@
-use crate::common::{ArrayVecConvert, IsDay, MAX_OUTPUT_LEN};
-use alloc::vec;
-use arrayvec::ArrayVec;
-use core::ops::Range;
+use crate::common::PartAnswer;
+use alloc::{boxed::Box, vec};
+use core::fmt::Debug;
+use derive_more::{Deref, DerefMut};
 
 #[derive(Clone, Copy, Debug)]
 enum InstrStem {
@@ -10,104 +10,122 @@ enum InstrStem {
     Toggle,
 }
 
-fn read_number(input_idx: &mut usize, input: &[u8]) -> u16 {
-    #[allow(clippy::indexing_slicing)]
-    let chunk: [u8; 3] = input[*input_idx..*input_idx + 3].try_into().unwrap();
-
-    let mut num = u16::from(chunk[0] - b'0');
-
-    for &c in &chunk[1..] {
-        if !c.is_ascii_digit() {
-            break;
-        }
-
-        num *= 10;
-        num += u16::from(c - b'0');
-
-        *input_idx += 1;
-    }
-
-    *input_idx += 1;
-
-    num
-}
-
-fn read_line(input_idx: &mut usize, input: &[u8]) -> Instruction {
-    let (instr_type, inc) = if input[*input_idx + 1] == b'o' {
-        (InstrStem::Toggle, 7)
-    } else if input[*input_idx + 6] == b'n' {
-        (InstrStem::TurnOn, 8)
-    } else {
-        (InstrStem::TurnOff, 9)
-    };
-
-    *input_idx += inc;
-
-    let x_from = read_number(input_idx, input);
-    *input_idx += 1;
-    let y_from = read_number(input_idx, input);
-
-    *input_idx += 9;
-
-    let x_to = read_number(input_idx, input);
-    *input_idx += 1;
-    let y_to = read_number(input_idx, input);
-    *input_idx += 1;
-
-    Instruction {
-        instr_type,
-        x_range: x_from as usize..x_to as usize + 1,
-        y_range: y_from as usize..y_to as usize + 1,
-    }
-}
-
+#[derive(Clone, Copy, Debug)]
 struct Instruction {
-    instr_type: InstrStem,
-    x_range: Range<usize>,
-    y_range: Range<usize>,
+    stem: InstrStem,
+    from_node: [u16; 2],
+    to_node: [u16; 2],
 }
 
-#[derive(Clone, Copy, Debug, Default)]
-struct Light {
-    dig: bool,
-    ana: u32,
+impl Instruction {
+    fn next(input_idx: &mut usize, input: &[u8]) -> Self {
+        #[allow(clippy::indexing_slicing)]
+        let (stem, inc) = if input[*input_idx + 1] == b'o' {
+            (InstrStem::Toggle, 7)
+        } else if input[*input_idx + 6] == b'n' {
+            (InstrStem::TurnOn, 8)
+        } else {
+            (InstrStem::TurnOff, 9)
+        };
+
+        *input_idx += inc;
+
+        let read_number = |input_idx: &mut usize| {
+            #[allow(clippy::indexing_slicing)]
+            let chunk: [u8; 3] = input[*input_idx..*input_idx + 3].try_into().unwrap();
+
+            let mut num = u16::from(chunk[0] - b'0');
+
+            for &c in &chunk[1..] {
+                if !c.is_ascii_digit() {
+                    break;
+                }
+
+                num *= 10;
+                num += u16::from(c - b'0');
+
+                *input_idx += 1;
+            }
+
+            *input_idx += 2;
+
+            num
+        };
+
+        let x_from = read_number(input_idx);
+        let y_from = read_number(input_idx);
+
+        *input_idx += 8;
+
+        let x_to = read_number(input_idx);
+        let y_to = read_number(input_idx);
+
+        Self {
+            stem,
+            from_node: [x_from, y_from],
+            to_node: [x_to, y_to],
+        }
+    }
 }
 
-pub struct Day;
+#[derive(Clone, Debug, Deref, DerefMut)]
+struct Grid<T>(Box<[T; 1_000_000]>);
 
-impl IsDay for Day {
-    fn run(input: &[u8]) -> [ArrayVec<u8, MAX_OUTPUT_LEN>; 2] {
-        let mut grid = vec![[Light::default(); 1000]; 1000].into_boxed_slice();
+impl<T> Grid<T>
+where
+    T: Debug + Default + Clone + Copy,
+{
+    pub fn new() -> Self {
+        Self(
+            vec![T::default(); 1_000_000]
+                .into_boxed_slice()
+                .try_into()
+                .unwrap(),
+        )
+    }
 
-        let mut input_idx = 0;
+    pub fn set(&mut self, from_node: [u16; 2], to_node: [u16; 2], effect: impl Fn(T) -> T) {
+        for row in from_node[0] as usize..=to_node[0] as usize {
+            for col in from_node[1] as usize..=to_node[1] as usize {
+                let idx = row * 1000 + col;
+                #[allow(clippy::indexing_slicing)]
+                let light = &mut self[idx];
+                *light = effect(*light);
+            }
+        }
+    }
+}
 
-        while input_idx < input.len() {
-            let instr = read_line(&mut input_idx, input);
+pub fn run(input: &[u8]) -> [PartAnswer; 2] {
+    let mut digital_grid = Grid::<bool>::new();
+    let mut analogue_grid = Grid::<u32>::new();
 
-            grid[instr.x_range]
-                .iter_mut()
-                .flat_map(|row| row[instr.y_range.clone()].iter_mut())
-                .for_each(|light| match instr.instr_type {
-                    InstrStem::TurnOn => {
-                        light.dig = true;
-                        light.ana += 1;
-                    }
-                    InstrStem::TurnOff => {
-                        light.dig = false;
-                        light.ana = light.ana.saturating_sub(1);
-                    }
-                    InstrStem::Toggle => {
-                        light.dig = !light.dig;
-                        light.ana += 2;
-                    }
-                });
+    let mut input_idx = 0;
+
+    while input_idx < input.len() {
+        let instr = Instruction::next(&mut input_idx, input);
+
+        macro_rules! set {
+            ($grid:ident, $effect:expr) => {
+                $grid.set(instr.from_node, instr.to_node, $effect)
+            };
         }
 
-        grid.iter()
-            .flat_map(|row| row.iter())
-            .fold([0, 0], |[dig_acc, ana_acc], light| {
-                [dig_acc + u32::from(light.dig), ana_acc + light.ana]
-            })
-            .map(ArrayVec::from_int)
+        match instr.stem {
+            InstrStem::TurnOn => set!(digital_grid, |_| true),
+            InstrStem::TurnOff => set!(digital_grid, |_| false),
+            InstrStem::Toggle => set!(digital_grid, |s| !s),
+        }
+
+        match instr.stem {
+            InstrStem::TurnOn => set!(analogue_grid, |s| s + 1),
+            InstrStem::TurnOff => set!(analogue_grid, |s| s.saturating_sub(1)),
+            InstrStem::Toggle => set!(analogue_grid, |s| s + 2),
+        }
     }
+
+    let digital_total = digital_grid.0.iter().filter(|&&light| light).count();
+    let analogue_total: u32 = analogue_grid.0.iter().sum();
+
+    [digital_total.into(), analogue_total.into()]
 }

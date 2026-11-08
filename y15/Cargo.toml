@@ -5,7 +5,7 @@ edition.workspace = true
 
 [dependencies]
 arrayvec.workspace = true
-itertools.workspace = true
+derive_more.workspace = true
 itoa.workspace = true
 md-5.workspace = true
 mimalloc.workspace = true
