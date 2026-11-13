@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["y15"]
+members = ["y15", "y16"]
 
 [workspace.package]
 edition = "2024"
@@ -13,7 +13,7 @@ panic = "abort"
 [workspace.dependencies]
 arrayvec = "0.7.8"
 derive_more = { version = "2.1.1", features = ["deref", "deref_mut"] }
-itoa = "1.0.18"
+itoa = "1.0.19"
 md-5 = "0.11.0"
 mimalloc = "0.1.52"
 rayon = "1.12.0"
