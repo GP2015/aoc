@@ -1,36 +1,8 @@
 #![no_std]
 #![warn(clippy::pedantic, clippy::nursery)]
-#![allow(clippy::fallible_impl_from)]
-
-const HIGHEST_DAY: u8 = 7;
-
-macro_rules! days {
-    ($callback:ident) => {
-        $callback! {
-            d01,
-            d02,
-            d03,
-            d04,
-            d05,
-            d06,
-            d07,
-        }
-    };
-}
-
 extern crate alloc;
 extern crate std;
 
-macro_rules! day_mods {
-    ($($module:ident),+ $(,)?) => {
-        $(mod $module;)+
-    };
-}
-
-mod common;
-days!(day_mods);
-
-use crate::common::PartAnswer;
 use alloc::{borrow::ToOwned, format, vec::Vec};
 use core::time::Duration;
 use mimalloc::MiMalloc;
@@ -38,15 +10,6 @@ use std::{env, fs, path::Path, println, time::SystemTime};
 
 #[global_allocator]
 static GLOBAL: MiMalloc = MiMalloc;
-
-macro_rules! day_runs {
-    ($($module:ident),+ $(,)?) => {
-        [$($module::run),+]
-    };
-}
-
-type DayFn = fn(&[u8]) -> [PartAnswer; 2];
-const DAYS: [DayFn; HIGHEST_DAY as usize] = days!(day_runs);
 
 fn input(data_dir: &str, day_num: usize) -> Vec<u8> {
     let name = format!("{day_num:02}.txt");
@@ -66,7 +29,7 @@ fn main() {
     let data_dir = env::args().nth(1).unwrap();
 
     let mut total = Duration::default();
-    for (day_index, day_fn) in DAYS.iter().enumerate() {
+    for (day_index, day_fn) in y15::days().iter().enumerate() {
         let day = day_index + 1;
 
         let input_raw = input(&data_dir, day);

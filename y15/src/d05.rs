@@ -1,5 +1,5 @@
-use crate::common::PartAnswer;
-use std::iter;
+use crate::PartAnswer;
+use core::iter;
 
 fn has_three_vowels(line: &[u8; 16]) -> bool {
     let mut vowels = 0;

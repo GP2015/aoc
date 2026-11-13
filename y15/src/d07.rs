@@ -1,4 +1,4 @@
-use crate::common::PartAnswer;
+use crate::PartAnswer;
 use alloc::vec::Vec;
 use rustc_hash::FxHashMap;
 
@@ -115,7 +115,7 @@ impl From<&[&[u8]]> for Instruction {
     }
 }
 
-fn get_a(instrs: &[Instruction]) -> u16 {
+fn get_wire_a(instrs: &[Instruction]) -> u16 {
     let mut wires = FxHashMap::from_iter(instrs.iter().map(|instr| (instr.out, None)));
 
     while wires[&A_ID].is_none() {
@@ -153,7 +153,7 @@ pub fn run(input: &[u8]) -> [PartAnswer; 2] {
         })
         .collect();
 
-    let part_a = get_a(&instrs);
+    let part_a = get_wire_a(&instrs);
 
     for instr in &mut instrs {
         if instr.out == B_ID {
@@ -161,7 +161,7 @@ pub fn run(input: &[u8]) -> [PartAnswer; 2] {
         }
     }
 
-    let part_b = get_a(&instrs);
+    let part_b = get_wire_a(&instrs);
 
     [part_a.into(), part_b.into()]
 }

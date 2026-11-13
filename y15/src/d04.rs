@@ -1,4 +1,4 @@
-use crate::common::PartAnswer;
+use crate::PartAnswer;
 use core::{
     hint,
     sync::atomic::{AtomicU32, Ordering},

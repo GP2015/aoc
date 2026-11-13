@@ -1,4 +1,4 @@
-use crate::common::PartAnswer;
+use crate::PartAnswer;
 use alloc::{boxed::Box, vec};
 use core::fmt::Debug;
 use derive_more::{Deref, DerefMut};

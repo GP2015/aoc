@@ -1,4 +1,4 @@
-use crate::common::PartAnswer;
+use crate::PartAnswer;
 
 fn next_dims(input_idx: &mut usize, input: &[u8]) -> [u32; 3] {
     let mut dims = [0; 3];
