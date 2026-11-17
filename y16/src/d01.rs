@@ -44,7 +44,7 @@ pub fn run(input: &[u8]) -> [PartAnswer; 2] {
     let mut dir = Direction::North;
 
     let instrs = input
-        .split(|&b| b == b' ')
+        .split(|&c| c == b' ')
         .map(|chunk| {
             let (&last_item, rest) = chunk.split_last().unwrap();
             if last_item == b',' { rest } else { chunk }
@@ -60,9 +60,7 @@ pub fn run(input: &[u8]) -> [PartAnswer; 2] {
 
             Instruction {
                 dir,
-                steps: raw_steps
-                    .iter()
-                    .fold(0, |acc, digit| (acc * 10) + u16::from(digit - b'0')),
+                steps: atoi::atoi(raw_steps).unwrap(),
             }
         });
 

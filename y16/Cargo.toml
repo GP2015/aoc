@@ -5,6 +5,7 @@ edition.workspace = true
 
 [dependencies]
 arrayvec.workspace = true
+atoi.workspace = true
 common.workspace = true
 derive_more.workspace = true
 mimalloc.workspace = true
