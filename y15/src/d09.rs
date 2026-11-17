@@ -1,6 +1,7 @@
 use alloc::{vec, vec::Vec};
 use common::PartAnswer;
 use itertools::Itertools;
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 pub fn run(input: &[u8]) -> [PartAnswer; 2] {
     let num_lines = 1 + bytecount::count(input, b'\n');
@@ -30,18 +31,26 @@ pub fn run(input: &[u8]) -> [PartAnswer; 2] {
         }
     }
 
-    let mut lowest = u16::MAX;
-    let mut highest = 0;
-
-    for perm in (0..num_cities).permutations(num_cities) {
-        let route_len = perm
-            .array_windows()
-            .map(|[l0, l1]| dists[l0 * num_cities + l1])
-            .sum();
-
-        lowest = lowest.min(route_len);
-        highest = highest.max(route_len);
-    }
-
-    [lowest.into(), highest.into()]
+    (0..num_cities)
+        .into_par_iter()
+        .map(|start| {
+            (0..num_cities)
+                .filter(|&c| c != start)
+                .permutations(num_cities - 1)
+                .map(|perm| {
+                    dists[start * num_cities + perm[0]]
+                        + perm
+                            .array_windows()
+                            .map(|[l0, l1]| dists[l0 * num_cities + l1])
+                            .sum::<u16>()
+                })
+                .fold([u16::MAX, 0], |[lowest, highest], item| {
+                    [lowest.min(item), highest.max(item)]
+                })
+        })
+        .reduce(
+            || [u16::MAX, 0],
+            |acc, local| [acc[0].min(local[0]), acc[1].max(local[1])],
+        )
+        .map(Into::into)
 }
