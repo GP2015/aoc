@@ -1,9 +1,9 @@
-use crate::PartAnswer;
+use common::PartAnswer;
 use core::{
+    fmt::NumBuffer,
     hint,
     sync::atomic::{AtomicU32, Ordering},
 };
-use itoa::Buffer;
 use md5::{Digest, Md5};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
@@ -14,8 +14,8 @@ fn core_search(k: u32, num_cores: u32, stem_hasher: &Md5, a: &AtomicU32, b: &Ato
     let k_mod = k % B_CHECK_FREQ;
 
     loop {
-        let mut num_buf = Buffer::new();
-        let num_str = num_buf.format(num);
+        let mut num_buf = NumBuffer::new();
+        let num_str = num.format_into(&mut num_buf);
 
         let mut hasher = stem_hasher.clone();
         hasher.update(num_str);

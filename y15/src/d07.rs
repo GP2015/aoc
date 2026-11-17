@@ -1,5 +1,5 @@
-use crate::PartAnswer;
 use alloc::vec::Vec;
+use common::PartAnswer;
 use rustc_hash::FxHashMap;
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]

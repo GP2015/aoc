@@ -1,4 +1,4 @@
-use crate::PartAnswer;
+use common::PartAnswer;
 use core::array;
 use rustc_hash::{FxBuildHasher, FxHashSet};
 

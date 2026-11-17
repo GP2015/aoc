@@ -1,4 +1,4 @@
-use crate::PartAnswer;
+use common::PartAnswer;
 use core::iter;
 
 fn has_three_vowels(line: &[u8; 16]) -> bool {

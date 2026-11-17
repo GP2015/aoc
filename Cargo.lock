@@ -34,6 +34,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4e7648175b45a9a48536d676f68d918270699102aa8dab5496df06904c914600"
 
 [[package]]
+name = "common"
+version = "0.1.0"
+dependencies = [
+ "arrayvec",
+ "derive_more",
+]
+
+[[package]]
 name = "const-oid"
 version = "0.10.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -125,12 +133,6 @@ checksum = "27f864f10dfb56725ce5ce5472bc52252c8f93a4ab86327122cebf62c5f59a17"
 dependencies = [
  "typenum",
 ]
-
-[[package]]
-name = "itoa"
-version = "1.0.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3bd1574e617a9a6c1f8f8181bd7e841e1f20e4277607ef28945765188d6284d4"
 
 [[package]]
 name = "libmimalloc-sys"
@@ -253,8 +255,8 @@ name = "y15"
 version = "0.1.0"
 dependencies = [
  "arrayvec",
+ "common",
  "derive_more",
- "itoa",
  "md-5",
  "mimalloc",
  "rayon",
@@ -266,7 +268,7 @@ name = "y16"
 version = "0.1.0"
 dependencies = [
  "arrayvec",
+ "common",
  "derive_more",
- "itoa",
  "mimalloc",
 ]

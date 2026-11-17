@@ -1,4 +1,4 @@
-use crate::PartAnswer;
+use common::PartAnswer;
 use core::ops::{Add, AddAssign};
 
 #[derive(Clone, Copy, Debug)]

@@ -1,4 +1,4 @@
-use crate::PartAnswer;
+use common::PartAnswer;
 use core::hint;
 
 pub fn run(input: &[u8]) -> [PartAnswer; 2] {
