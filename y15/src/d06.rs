@@ -2,6 +2,7 @@ use alloc::{boxed::Box, vec};
 use common::PartAnswer;
 use core::fmt::Debug;
 use derive_more::{Deref, DerefMut};
+use itertools::Itertools;
 
 #[derive(Clone, Copy, Debug)]
 enum InstrStem {
@@ -15,57 +16,6 @@ struct Instruction {
     stem: InstrStem,
     from_node: [u16; 2],
     to_node: [u16; 2],
-}
-
-impl Instruction {
-    fn next(input_idx: &mut usize, input: &[u8]) -> Self {
-        #[allow(clippy::indexing_slicing)]
-        let (stem, inc) = if input[*input_idx + 1] == b'o' {
-            (InstrStem::Toggle, 7)
-        } else if input[*input_idx + 6] == b'n' {
-            (InstrStem::TurnOn, 8)
-        } else {
-            (InstrStem::TurnOff, 9)
-        };
-
-        *input_idx += inc;
-
-        let read_number = |input_idx: &mut usize| {
-            #[allow(clippy::indexing_slicing)]
-            let chunk: [u8; 3] = input[*input_idx..*input_idx + 3].try_into().unwrap();
-
-            let mut num = u16::from(chunk[0] - b'0');
-
-            for &c in &chunk[1..] {
-                if !c.is_ascii_digit() {
-                    break;
-                }
-
-                num *= 10;
-                num += u16::from(c - b'0');
-
-                *input_idx += 1;
-            }
-
-            *input_idx += 2;
-
-            num
-        };
-
-        let x_from = read_number(input_idx);
-        let y_from = read_number(input_idx);
-
-        *input_idx += 8;
-
-        let x_to = read_number(input_idx);
-        let y_to = read_number(input_idx);
-
-        Self {
-            stem,
-            from_node: [x_from, y_from],
-            to_node: [x_to, y_to],
-        }
-    }
 }
 
 #[derive(Clone, Debug, Deref, DerefMut)]
@@ -100,11 +50,34 @@ pub fn run(input: &[u8]) -> [PartAnswer; 2] {
     let mut digital_grid = Grid::<bool>::new();
     let mut analogue_grid = Grid::<u32>::new();
 
-    let mut input_idx = 0;
+    let instrs = input.split(|&c| c == b'\n').map(|line| {
+        let mut words = line.split(|&c| c == b' ');
 
-    while input_idx < input.len() {
-        let instr = Instruction::next(&mut input_idx, input);
+        let stem = if words.next().unwrap()[1] == b'o' {
+            InstrStem::Toggle
+        } else if words.next().unwrap()[1] == b'n' {
+            InstrStem::TurnOn
+        } else {
+            InstrStem::TurnOff
+        };
 
+        let node = |num: &[u8]| {
+            num.split(|&c| c == b',')
+                .map(|num| atoi::atoi(num).unwrap())
+                .next_array::<2>()
+                .unwrap()
+        };
+
+        let (from_raw, _, to_raw) = words.next_tuple().unwrap();
+
+        Instruction {
+            stem,
+            from_node: node(from_raw),
+            to_node: node(to_raw),
+        }
+    });
+
+    for instr in instrs {
         macro_rules! set {
             ($grid:ident, $effect:expr) => {
                 $grid.set(instr.from_node, instr.to_node, $effect)
@@ -124,8 +97,8 @@ pub fn run(input: &[u8]) -> [PartAnswer; 2] {
         }
     }
 
-    let digital_total = digital_grid.0.iter().filter(|&&light| light).count();
-    let analogue_total: u32 = analogue_grid.0.iter().sum();
-
-    [digital_total.into(), analogue_total.into()]
+    [
+        digital_grid.iter().filter(|&&light| light).count().into(),
+        analogue_grid.iter().sum::<u32>().into(),
+    ]
 }

@@ -2,7 +2,7 @@ use common::PartAnswer;
 use core::hint;
 
 pub fn run(input: &[u8]) -> [PartAnswer; 2] {
-    let mut iter = input.iter().map(|&b| if b == b'(' { 1 } else { -1 });
+    let mut iter = input.iter().map(|&c| if c == b'(' { 1 } else { -1 });
 
     let mut floor = 0;
     let mut pos = 0;

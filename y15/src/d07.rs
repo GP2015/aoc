@@ -27,11 +27,7 @@ enum Param {
 impl From<&[u8]> for Param {
     fn from(word: &[u8]) -> Self {
         if word[0].is_ascii_digit() {
-            Self::Value(
-                word.iter()
-                    .map(|raw| u16::from(raw - b'0'))
-                    .fold(0, |acc, d| (acc * 10) + d),
-            )
+            Self::Value(atoi::atoi(word).unwrap())
         } else {
             Self::Wire(word.into())
         }
@@ -146,22 +142,20 @@ fn get_wire_a(instrs: &[Instruction]) -> u16 {
 
 pub fn run(input: &[u8]) -> [PartAnswer; 2] {
     let mut instrs: Vec<_> = input
-        .split(|&b| b == b'\n')
+        .split(|&c| c == b'\n')
         .map(|line| {
-            let words: Vec<_> = line.split(|&b| b == b' ').collect();
+            let words: Vec<_> = line.split(|&c| c == b' ').collect();
             Instruction::from(words.as_ref())
         })
         .collect();
 
-    let part_a = get_wire_a(&instrs);
+    let a = get_wire_a(&instrs);
 
     for instr in &mut instrs {
         if instr.out == B_ID {
-            instr.op = Operation::Short(Param::Value(part_a));
+            instr.op = Operation::Short(Param::Value(a));
         }
     }
 
-    let part_b = get_wire_a(&instrs);
-
-    [part_a.into(), part_b.into()]
+    [a.into(), get_wire_a(&instrs).into()]
 }
