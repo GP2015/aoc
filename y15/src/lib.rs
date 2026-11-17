@@ -3,8 +3,6 @@
 #![allow(clippy::fallible_impl_from, clippy::missing_panics_doc)]
 extern crate alloc;
 
-const HIGHEST_DAY: usize = 7;
-
 macro_rules! days {
     ($callback:ident) => {
         $callback! {
@@ -15,9 +13,13 @@ macro_rules! days {
             d05,
             d06,
             d07,
+            d08,
+            d09,
+            d10,
         }
     };
 }
+
 macro_rules! day_mods {
     ($($module:ident),+ $(,)?) => {
         $(pub mod $module;)+
@@ -34,6 +36,6 @@ macro_rules! day_runs {
 }
 
 #[must_use]
-pub fn days() -> [DayFn; HIGHEST_DAY] {
+pub fn days() -> [DayFn; days!(day_runs).len()] {
     days!(day_runs)
 }
