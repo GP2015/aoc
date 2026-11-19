@@ -4,21 +4,21 @@ use core::fmt::Debug;
 use derive_more::{Deref, DerefMut};
 use itertools::Itertools;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 enum InstrStem {
     TurnOn,
     TurnOff,
     Toggle,
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 struct Instruction {
     stem: InstrStem,
     from_node: [u16; 2],
     to_node: [u16; 2],
 }
 
-#[derive(Clone, Debug, Deref, DerefMut)]
+#[derive(Clone, Debug, Deref, DerefMut, Eq, Hash, PartialEq)]
 struct Grid<T>(Box<[T; 1_000_000]>);
 
 impl<T> Grid<T>

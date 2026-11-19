@@ -18,7 +18,7 @@ impl From<&[u8]> for WireId {
 const A_ID: WireId = WireId(0);
 const B_ID: WireId = WireId(1);
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 enum Param {
     Value(u16),
     Wire(WireId),
@@ -35,22 +35,22 @@ impl From<&[u8]> for Param {
 }
 
 impl Param {
-    pub fn defined_in(&self, wires: &FxHashMap<WireId, Option<u16>>) -> bool {
+    pub fn defined_in(self, wires: &FxHashMap<WireId, Option<u16>>) -> bool {
         match self {
             Self::Value(_) => true,
-            Self::Wire(w) => wires[w].is_some(),
+            Self::Wire(w) => wires[&w].is_some(),
         }
     }
 
-    pub fn read(&self, wires: &FxHashMap<WireId, Option<u16>>) -> u16 {
+    pub fn read(self, wires: &FxHashMap<WireId, Option<u16>>) -> u16 {
         match self {
-            Self::Value(v) => *v,
-            Self::Wire(w) => wires[w].unwrap(),
+            Self::Value(v) => v,
+            Self::Wire(w) => wires[&w].unwrap(),
         }
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 enum Operation {
     Short(Param),
     Not(Param),
@@ -96,7 +96,7 @@ impl Operation {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 struct Instruction {
     op: Operation,
     out: WireId,

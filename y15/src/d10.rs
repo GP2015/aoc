@@ -1,44 +1,50 @@
 use alloc::{boxed::Box, vec::Vec};
 use common::PartAnswer;
+use derive_more::{Deref, DerefMut};
 
-fn generate(v: &[u8]) -> Box<[u8]> {
-    let mut out = Vec::new();
+#[derive(Clone, Debug, Deref, DerefMut, Hash, Eq, PartialEq)]
+struct Sequence(Box<[u8]>);
 
-    let mut dig = v[0];
-    let mut len = 1;
-    let mut idx = 1;
+impl Sequence {
+    fn next_seq(&mut self) {
+        let mut out = Vec::new();
 
-    while idx < v.len() {
-        if v[idx] != dig {
-            out.push(len);
-            out.push(dig);
+        let mut dig = self[0];
+        let mut len = 1;
+        let mut idx = 1;
 
-            dig = v[idx];
-            len = 0;
+        while idx < self.len() {
+            if self[idx] != dig {
+                out.push(len);
+                out.push(dig);
+
+                dig = self[idx];
+                len = 0;
+            }
+
+            len += 1;
+            idx += 1;
         }
 
-        len += 1;
-        idx += 1;
+        out.push(len);
+        out.push(dig);
+
+        self.0 = out.into_boxed_slice();
     }
-
-    out.push(len);
-    out.push(dig);
-
-    out.into_boxed_slice()
 }
 
 pub fn run(input: &[u8]) -> [PartAnswer; 2] {
-    let mut current: Box<_> = input.iter().map(|&c| c - b'0').collect();
+    let mut seq = Sequence(input.iter().map(|&c| c - b'0').collect());
 
     for _ in 0..40 {
-        current = generate(&current);
+        seq.next_seq();
     }
 
-    let a = current.len().into();
+    let a = seq.len().into();
 
     for _ in 0..10 {
-        current = generate(&current);
+        seq.next_seq();
     }
 
-    [a, current.len().into()]
+    [a, seq.len().into()]
 }

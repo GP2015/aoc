@@ -16,24 +16,14 @@ macro_rules! days {
             d08,
             d09,
             d10,
+            d11,
         }
     };
 }
 
-macro_rules! day_mods {
-    ($($module:ident),+ $(,)?) => {
-        $(pub mod $module;)+
-    };
-}
 days!(day_mods);
 
-type DayFn = fn(input: &[u8]) -> [common::PartAnswer; 2];
-
-macro_rules! day_runs {
-    ($($module:ident),+ $(,)?) => {
-        [$($module::run),+]
-    };
-}
+use common::{DayFn, day_mods, day_runs};
 
 #[must_use]
 pub fn days() -> [DayFn; days!(day_runs).len()] {
