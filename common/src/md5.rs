@@ -71,7 +71,7 @@ pub const K: [u32; 64] = [
     0xeb86_d391,
 ];
 
-pub const A0_INITIAL: u32 = 0x6745_2301; // A
-pub const B0_INITIAL: u32 = 0xefcd_ab89; // B
-pub const C0_INITIAL: u32 = 0x98ba_dcfe; // C
-pub const D0_INITIAL: u32 = 0x1032_5476; // D
+pub const A0_INITIAL: u32 = 0x6745_2301;
+pub const B0_INITIAL: u32 = 0xefcd_ab89;
+pub const C0_INITIAL: u32 = 0x98ba_dcfe;
+pub const D0_INITIAL: u32 = 0x1032_5476;

@@ -33,10 +33,11 @@ pub fn run(input: &[u8]) -> [PartAnswer; 2] {
         });
 
         for row in from_node[0]..=to_node[0] {
-            for col in from_node[1]..=to_node[1] {
-                let idx = row * 1000 + col;
-                let light = &mut grid[idx];
+            let col_start = row * 1000;
+            let idx_from = col_start + from_node[1];
+            let idx_to = col_start + to_node[1];
 
+            for light in &mut grid[idx_from..=idx_to] {
                 *light = match stem {
                     InstrStem::TurnOn => (*light + 2) | 1,
                     InstrStem::TurnOff => light.saturating_sub(2) & 0xFFFF_FFFE,
