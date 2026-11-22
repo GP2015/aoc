@@ -64,7 +64,6 @@ impl From<&[&[u8]]> for Operation {
     fn from(words: &[&[u8]]) -> Self {
         let len = words.len();
 
-        #[allow(clippy::indexing_slicing)]
         let words: &[&[u8]; 3] = words[0..3].try_into().unwrap();
 
         match len {

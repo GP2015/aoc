@@ -41,7 +41,6 @@ impl Line<'_> {
         for w in self.array_windows::<2>() {
             let idx = (w[0] - b'a') as usize * 26 + (w[1] - b'a') as usize;
 
-            #[allow(clippy::indexing_slicing)]
             let seen_idx = &mut seen[idx];
 
             if (!check_last_idx || idx != last_idx) && *seen_idx {
