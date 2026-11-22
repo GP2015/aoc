@@ -6,46 +6,69 @@ use derive_more::{Deref, DerefMut};
 struct Password([u8; 8]);
 
 impl Password {
-    fn increment(&mut self) {
-        let mut idx = 7;
+    fn has_two_pairs(self) -> bool {
+        let mut found_one = false;
+        let mut skip = false;
 
-        loop {
-            if self[idx] != b'z' {
-                self[idx] += 1;
-                return;
+        for w in self.array_windows::<2>() {
+            if skip {
+                skip = false;
+                continue;
             }
 
-            self[idx] = b'a';
-            idx -= 1;
+            if w[0] == w[1] {
+                if found_one {
+                    return true;
+                }
+
+                found_one = true;
+                skip = true;
+            }
         }
+
+        false
     }
 
-    fn has_two_pairs(&self) {
-        //
+    fn has_straight(self) -> bool {
+        self.array_windows::<3>()
+            .any(|c| c[0] <= b'x' && c[1] == c[0] + 1 && c[2] == c[1] + 1)
     }
 
     fn is_valid(self) -> bool {
-        let has_straight = self
-            .array_windows::<3>()
-            .any(|c| c[0] <= b'x' && c[1] == c[0] + 1 && c[2] == c[1] + 1);
-
-        let no_banned_letters = !self.iter().any(|&c| b"iol".contains(&c));
-
-        let has_two_pairs = todo!();
-
-        has_straight && no_banned_letters && has_two_pairs
+        self.has_straight() && self.has_two_pairs()
     }
 
-    pub fn next_valid(self) -> Self {
-        let mut out = self;
+    fn next_attempt(mut self) -> Self {
+        for idx in (0..8).rev() {
+            if b"hnk".contains(&self[idx]) {
+                self[idx] += 1;
 
-        loop {
-            out.increment();
+                for c in &mut self[idx + 1..8] {
+                    *c = b'a';
+                }
 
-            if out.is_valid() {
-                return out;
+                break;
             }
+
+            if self[idx] != b'z' {
+                self[idx] += 1;
+                break;
+            }
+
+            self[idx] = b'a';
         }
+
+        self
+    }
+
+    pub fn next_valid(mut self) -> Self {
+        self = self.next_attempt();
+
+        while !self.is_valid() {
+            self = self.next_attempt();
+        }
+
+        self
     }
 }
 
