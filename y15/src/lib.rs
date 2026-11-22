@@ -1,7 +1,7 @@
 #![no_std]
-#![warn(clippy::pedantic, clippy::nursery)]
 #![allow(clippy::fallible_impl_from, clippy::missing_panics_doc)]
 extern crate alloc;
+extern crate std;
 
 macro_rules! days {
     ($callback:ident) => {
@@ -17,13 +17,14 @@ macro_rules! days {
             d09,
             d10,
             d11,
+            d12,
         }
     };
 }
 
-days!(day_mods);
-
 use common::{DayFn, day_mods, day_runs};
+
+days!(day_mods);
 
 #[must_use]
 pub fn days() -> [DayFn; days!(day_runs).len()] {
