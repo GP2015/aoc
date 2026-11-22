@@ -1,5 +1,5 @@
 use alloc::vec::Vec;
-use common::PartAnswer;
+use common::{FromUnsigned, PartAnswer};
 use rustc_hash::FxHashMap;
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -27,7 +27,7 @@ enum Param {
 impl From<&[u8]> for Param {
     fn from(word: &[u8]) -> Self {
         if word[0].is_ascii_digit() {
-            Self::Value(atoi::atoi(word).unwrap())
+            Self::Value(u16::from_unsigned(word))
         } else {
             Self::Wire(word.into())
         }

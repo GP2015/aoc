@@ -1,5 +1,5 @@
 use alloc::{vec, vec::Vec};
-use common::PartAnswer;
+use common::{FromUnsigned, PartAnswer};
 use itertools::Itertools;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
@@ -12,9 +12,9 @@ pub fn run(input: &[u8]) -> [PartAnswer; 2] {
     let mut dists = vec![0; num_cities * num_cities].into_boxed_slice();
 
     for line in input.split(|&c| c == b'\n') {
-        let (l0, _, l1, _, raw_dist) = line.split(|&c| c == b' ').next_tuple().unwrap();
+        let [l0, _, l1, _, raw_dist] = line.split(|&c| c == b' ').next_array().unwrap();
 
-        let dist: u16 = atoi::atoi(raw_dist).unwrap();
+        let dist = u16::from_unsigned(raw_dist);
 
         let end: [usize; 2] = [l0, l1].map(|l| {
             cities

@@ -1,3 +1,4 @@
+use common::FromUnsigned;
 use common::PartAnswer;
 use core::ops::{Add, AddAssign};
 
@@ -60,7 +61,7 @@ pub fn run(input: &[u8]) -> [PartAnswer; 2] {
 
             Instruction {
                 dir,
-                steps: atoi::atoi(raw_steps).unwrap(),
+                steps: u16::from_unsigned(raw_steps),
             }
         });
 

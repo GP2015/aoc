@@ -1,5 +1,5 @@
 use alloc::{boxed::Box, vec};
-use common::PartAnswer;
+use common::{FromUnsigned, PartAnswer};
 use core::fmt::Debug;
 use derive_more::{Deref, DerefMut};
 use itertools::Itertools;
@@ -61,14 +61,14 @@ pub fn run(input: &[u8]) -> [PartAnswer; 2] {
             InstrStem::TurnOff
         };
 
+        let [from_raw, _, to_raw] = words.next_array().unwrap();
+
         let node = |num: &[u8]| {
             num.split(|&c| c == b',')
-                .map(|num| atoi::atoi(num).unwrap())
+                .map(u16::from_unsigned)
                 .next_array::<2>()
                 .unwrap()
         };
-
-        let (from_raw, _, to_raw) = words.next_tuple().unwrap();
 
         Instruction {
             stem,

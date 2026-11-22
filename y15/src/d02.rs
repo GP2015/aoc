@@ -1,4 +1,4 @@
-use common::PartAnswer;
+use common::{FromUnsigned, PartAnswer};
 use itertools::Itertools;
 
 pub fn run(input: &[u8]) -> [PartAnswer; 2] {
@@ -7,7 +7,7 @@ pub fn run(input: &[u8]) -> [PartAnswer; 2] {
         .map(|line| {
             let mut dims: [u32; 3] = line
                 .split(|&c| c == b'x')
-                .map(|num| atoi::atoi(num).unwrap())
+                .map(u32::from_unsigned)
                 .next_array()
                 .unwrap();
 
