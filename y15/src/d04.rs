@@ -1,27 +1,84 @@
-use common::PartAnswer;
+use bytemuck::{Pod, Zeroable};
+use common::{PartAnswer, md5};
 use core::{
     fmt::NumBuffer,
     hint,
     sync::atomic::{AtomicU32, Ordering},
 };
-use md5::{Digest, Md5};
+use crunchy::unroll;
+use derive_more::{Deref, DerefMut};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
+
+#[repr(C, align(4))]
+#[derive(Copy, Clone, Debug, Deref, DerefMut, Eq, Hash, PartialEq, Pod, Zeroable)]
+pub struct PaddedMessage([u8; 64]);
+
+#[allow(clippy::many_single_char_names)]
+fn hash_start(mut padded: PaddedMessage, num: u32) -> [u8; 3] {
+    let mut num_buf = NumBuffer::new();
+    let num_str = num.format_into(&mut num_buf);
+    let append = num_str.as_bytes();
+
+    let total_len = 8 + append.len();
+
+    padded[8..total_len].copy_from_slice(append);
+    padded[total_len] = 0x80;
+    padded[56..64].copy_from_slice(&(total_len as u64 * 8).to_le_bytes());
+
+    let m: &[u32; 16] = bytemuck::cast_ref(&padded);
+
+    let mut a = md5::A0_INITIAL;
+    let mut b = md5::B0_INITIAL;
+    let mut c = md5::C0_INITIAL;
+    let mut d = md5::D0_INITIAL;
+
+    unroll! {
+        for i in 0..64 {
+            let f = match i {
+                0..16 => (b & c) | (!b & d),
+                16..32 => (d & b) | (!d & c),
+                32..48 => b ^ c ^ d,
+                _ => c ^ (b | !d), // 48..64
+            };
+
+            let g = match i {
+                0..16 => i,
+                16..32 => (5 * i + 1) % 16,
+                32..48 => (3 * i + 5) % 16,
+                _ => (7 * i) % 16, // 48..64
+            };
+
+            let f = f + a + md5::K[i] + m[g];
+            a = d;
+
+            #[allow(unused)]
+            {
+                d = c;
+                c = b;
+                b += f.rotate_left(md5::S[i]);
+            }
+        }
+    }
+
+    md5::A0_INITIAL.wrapping_add(a).to_le_bytes()[0..3]
+        .try_into()
+        .unwrap()
+}
 
 const B_CHECK_FREQ: u32 = 1 << 6;
 
-fn core_search(k: u32, num_cores: u32, stem_hasher: &Md5, a: &AtomicU32, b: &AtomicU32) {
+fn core_search(
+    k: u32,
+    num_cores: u32,
+    partial_padded: PaddedMessage,
+    a: &AtomicU32,
+    b: &AtomicU32,
+) {
     let mut num = k;
     let k_mod = k % B_CHECK_FREQ;
 
     loop {
-        let mut num_buf = NumBuffer::new();
-        let num_str = num.format_into(&mut num_buf);
-
-        let mut hasher = stem_hasher.clone();
-        hasher.update(num_str);
-
-        #[allow(clippy::indexing_slicing)]
-        let hash: [u8; 3] = hasher.finalize()[..3].try_into().unwrap();
+        let hash = hash_start(partial_padded, num);
 
         if hash[0] == 0 && hash[1] == 0 {
             hint::cold_path();
@@ -44,16 +101,17 @@ fn core_search(k: u32, num_cores: u32, stem_hasher: &Md5, a: &AtomicU32, b: &Ato
 }
 
 pub fn run(input: &[u8]) -> [PartAnswer; 2] {
-    let stem_hasher = Md5::new_with_prefix(input);
-
     let a = AtomicU32::new(u32::MAX);
     let b = AtomicU32::new(u32::MAX);
+
+    let mut partial_padded = PaddedMessage([0; 64]);
+    partial_padded[0..8].copy_from_slice(input);
 
     #[allow(clippy::cast_possible_truncation)]
     let num_cores = rayon::current_num_threads() as u32;
 
     (0..num_cores).into_par_iter().for_each(|k| {
-        core_search(k, num_cores, &stem_hasher, &a, &b);
+        core_search(k, num_cores, partial_padded, &a, &b);
     });
 
     [a, b].map(|sem| sem.load(Ordering::Relaxed).into())

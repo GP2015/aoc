@@ -4,6 +4,7 @@ extern crate alloc;
 extern crate std;
 
 mod data;
+pub mod md5;
 mod num_parse;
 mod part;
 mod summary;
