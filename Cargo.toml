@@ -5,14 +5,13 @@ members = ["common", "y15", "y16"]
 [workspace.package]
 edition = "2024"
 
-[profile.release]
-codegen-units = 1
-lto = "fat"
-panic = "abort"
+[workspace.lints.clippy]
+pedantic = "warn"
+nursery = "warn"
+todo = "warn"
 
 [workspace.dependencies]
 arrayvec = "0.7.8"
-atoi = "3.1.1"
 bytecount = "0.6.9"
 common = { path = "common" }
 derive_more = { version = "2.1.1", features = ["deref", "deref_mut"] }
@@ -21,3 +20,8 @@ md-5 = "0.11.0"
 mimalloc = "0.1.52"
 rayon = "1.12.0"
 rustc-hash = "2.1.3"
+
+[profile.release]
+codegen-units = 1
+lto = "fat"
+panic = "abort"
