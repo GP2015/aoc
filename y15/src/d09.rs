@@ -6,7 +6,7 @@ use rayon::iter::{IntoParallelIterator, ParallelIterator};
 pub fn run(input: &[u8]) -> [PartAnswer; 2] {
     let num_lines = 1 + bytecount::count(input, b'\n');
 
-    let num_cities = (1 + (1 + 8 * num_lines).isqrt()).div_ceil(2);
+    let num_cities = (1 + 8 * num_lines).isqrt().div_ceil(2);
 
     let mut cities = Vec::with_capacity(num_cities);
     let mut dists = vec![0; num_cities * num_cities].into_boxed_slice();
