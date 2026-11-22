@@ -7,7 +7,7 @@ struct Sequence(Box<[u8]>);
 
 impl Sequence {
     fn next_seq(&mut self) {
-        let mut out = Vec::new();
+        let mut out = Vec::with_capacity(2 * self.len());
 
         let mut dig = self[0];
         let mut len = 1;
