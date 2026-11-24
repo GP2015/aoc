@@ -10,6 +10,7 @@ mod part;
 mod summary;
 
 pub use crate::{
+    data::Answers,
     num_parse::{FromSigned, FromUnsigned},
     part::PartAnswer,
     summary::{DaySummary, YearSummary},
