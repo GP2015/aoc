@@ -64,7 +64,7 @@ impl From<&[&[u8]]> for Operation {
     fn from(words: &[&[u8]]) -> Self {
         let len = words.len();
 
-        let words: &[&[u8]; 3] = words[0..3].try_into().unwrap();
+        let words: &[&[u8]; 3] = words[..3].try_into().unwrap();
 
         match len {
             3 => Self::Short(words[0].into()),

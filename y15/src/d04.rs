@@ -60,7 +60,7 @@ fn hash_start(mut padded: PaddedMessage, num: u32) -> [u8; 3] {
         }
     }
 
-    md5::A0_INITIAL.wrapping_add(a).to_le_bytes()[0..3]
+    md5::A0_INITIAL.wrapping_add(a).to_le_bytes()[..3]
         .try_into()
         .unwrap()
 }
@@ -105,7 +105,7 @@ pub fn run(input: &[u8]) -> [PartAnswer; 2] {
     let b = AtomicU32::new(u32::MAX);
 
     let mut partial_padded = PaddedMessage([0; 64]);
-    partial_padded[0..8].copy_from_slice(input);
+    partial_padded[..8].copy_from_slice(input);
 
     #[allow(clippy::cast_possible_truncation)]
     let num_cores = rayon::current_num_threads() as u32;

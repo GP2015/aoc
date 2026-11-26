@@ -25,10 +25,6 @@ pub fn run(input: &[u8]) -> [PartAnswer; 2] {
 
             [a, b]
         })
-        .fold([0, 0], |mut acc, item| {
-            acc[0] += item[0];
-            acc[1] += item[1];
-            acc
-        })
+        .fold([0, 0], |[a, b], [i0, i1]| [a + i0, b + i1])
         .map(Into::into)
 }
