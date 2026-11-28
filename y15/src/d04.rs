@@ -32,6 +32,12 @@ fn hash_start(mut padded: PaddedMessage, num: u32) -> [u8; 3] {
     let mut c = md5::C0_INITIAL;
     let mut d = md5::D0_INITIAL;
 
+    macro_rules! w_add {
+        ($first:expr $(, $rest:expr)* $(,)?) => {
+            $first $(.wrapping_add($rest))*
+        };
+    }
+
     unroll! {
         for i in 0..64 {
             let f = match i {
@@ -50,19 +56,19 @@ fn hash_start(mut padded: PaddedMessage, num: u32) -> [u8; 3] {
                 _ => unreachable!()
             };
 
-            let f = f + a + md5::K[i] + m[g];
+            let f = w_add!(f, a, md5::K[i], m[g]);
             a = d;
 
             #[allow(unused)]
             {
                 d = c;
                 c = b;
-                b += f.rotate_left(md5::S[i]);
+                b = w_add!(b, f.rotate_left(md5::S[i]));
             }
         }
     }
 
-    md5::A0_INITIAL.wrapping_add(a).to_le_bytes()[..3]
+    w_add!(md5::A0_INITIAL, a).to_le_bytes()[..3]
         .try_into()
         .unwrap()
 }
