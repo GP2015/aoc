@@ -38,14 +38,16 @@ fn hash_start(mut padded: PaddedMessage, num: u32) -> [u8; 3] {
                 0..16 => (b & c) | (!b & d),
                 16..32 => (d & b) | (!d & c),
                 32..48 => b ^ c ^ d,
-                _ => c ^ (b | !d), // 48..64
+                48..64 => c ^ (b | !d),
+                _ => unreachable!()
             };
 
             let g = match i {
                 0..16 => i,
                 16..32 => (5 * i + 1) % 16,
                 32..48 => (3 * i + 5) % 16,
-                _ => (7 * i) % 16, // 48..64
+                48..64 => (7 * i) % 16, // 48..64
+                _ => unreachable!()
             };
 
             let f = f + a + md5::K[i] + m[g];

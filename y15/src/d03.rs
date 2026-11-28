@@ -9,7 +9,8 @@ fn step(set: &mut FxHashSet<u32>, pos: &mut u32, c: u8) {
         b'<' => *pos -= 1 << 16,
         b'>' => *pos += 1 << 16,
         b'^' => *pos += 1,
-        _ => *pos -= 1, // b'v'
+        b'v' => *pos -= 1,
+        _ => unreachable!(),
     }
 
     set.insert(*pos);
