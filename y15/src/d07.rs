@@ -72,11 +72,11 @@ impl From<&[&[u8]]> for Operation {
             _ => {
                 let op0 = words[0].into();
                 let op1 = words[2].into();
-                match words[1] {
-                    b"OR" => Self::Or(op0, op1),
-                    b"AND" => Self::And(op0, op1),
-                    b"LSHIFT" => Self::LShift(op0, op1),
-                    b"RSHIFT" => Self::RShift(op0, op1),
+                match words[1][0] {
+                    b'O' => Self::Or(op0, op1),
+                    b'A' => Self::And(op0, op1),
+                    b'L' => Self::LShift(op0, op1),
+                    b'R' => Self::RShift(op0, op1),
                     _ => unreachable!(),
                 }
             }
