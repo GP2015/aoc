@@ -21,6 +21,7 @@ macro_rules! days {
             d13,
             d14,
             d15,
+            d16,
         }
     };
 }
